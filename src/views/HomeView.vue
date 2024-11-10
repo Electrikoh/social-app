@@ -32,6 +32,6 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 const navigateToChat = () => {
-  router.push("/chat");
+  router.push("/login");
 };
 </script>

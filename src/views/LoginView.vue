@@ -1,52 +1,72 @@
 <template>
-  <main class="flex justify-center items-center min-h-screen bg-gray-900">
-    <div class="bg-gray-800 p-8 rounded-lg shadow-lg w-96">
-      <h2 class="text-2xl font-bold text-center text-white mb-6">Login</h2>
-      <form @submit.prevent="handleLogin">
-        <div class="mb-4">
-          <label for="username" class="block text-sm font-medium text-gray-300"
-            >Username</label
-          >
-          <input
-            id="username"
-            type="text"
-            v-model="username"
-            class="w-full p-2 mt-1 border border-gray-600 bg-gray-700 text-white rounded-md"
-            placeholder="Enter your username"
-          />
-        </div>
-        <div class="mb-6">
-          <label for="password" class="block text-sm font-medium text-gray-300"
-            >Password</label
-          >
-          <input
-            id="password"
-            type="password"
-            v-model="password"
-            class="w-full p-2 mt-1 border border-gray-600 bg-gray-700 text-white rounded-md"
-            placeholder="Enter your password"
-          />
-        </div>
-        <button
-          type="submit"
-          class="w-full p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-        >
-          Login
-        </button>
-      </form>
+  <div class="max-w-md mx-auto p-4 bg-gray-100 rounded-md shadow-md">
+    <h2 class="text-2xl font-bold mb-4">Login</h2>
+    <input
+      v-model="username"
+      placeholder="Username"
+      class="w-full mb-3 p-2 border border-gray-300 rounded-md"
+    />
+    <input
+      v-model="password"
+      type="password"
+      placeholder="Password"
+      class="w-full mb-3 p-2 border border-gray-300 rounded-md"
+    />
+    <div class="flex items-center mb-4">
+      <input
+        type="checkbox"
+        v-model="rememberMe"
+        id="rememberMe"
+        class="mr-2"
+      />
+      <label for="rememberMe" class="text-gray-700">Remember Me</label>
     </div>
-  </main>
+    <button
+      @click="login"
+      class="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600"
+    >
+      Login
+    </button>
+    <p v-if="errorMessage" class="text-red-500 mt-2">{{ errorMessage }}</p>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 
 const username = ref("");
 const password = ref("");
+const rememberMe = ref(false);
+const errorMessage = ref("");
+const router = useRouter();
 
-const handleLogin = () => {
-  // Simple login logic (for demo purposes)
-  console.log("Username:", username.value);
-  console.log("Password:", password.value);
+const login = async () => {
+  try {
+    const response = await fetch("http://localhost:3000/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: username.value,
+        password: password.value,
+        rememberMe: rememberMe.value,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      if (rememberMe.value) {
+        localStorage.setItem("token", data.token); // Persistent storage
+      } else {
+        sessionStorage.setItem("token", data.token); // Temporary storage
+      }
+      router.push("/chat"); // Redirect to the chat page
+    } else {
+      errorMessage.value = data.error;
+    }
+  } catch (error) {
+    errorMessage.value = "An error occurred during login.";
+  }
 };
 </script>
