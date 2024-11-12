@@ -63,7 +63,7 @@ const fetchMessages = async () => {
 
   try {
     const response = await fetch(
-      `http://localhost:3000/api/chat/${chatId.value}/channel/${channelId.value}`,
+      `http://localhost:3000/api/groups/${chatId.value}/${channelId.value}`,
       {
         method: "GET",
         headers: {
@@ -90,7 +90,7 @@ const sendMessage = async () => {
 
   try {
     const response = await fetch(
-      `http://localhost:3000/api/chat/${chatId.value}/channel/${channelId.value}`,
+      `http://localhost:3000/api/groups/${chatId.value}/${channelId.value}`,
       {
         method: "POST",
         headers: {
@@ -105,6 +105,8 @@ const sendMessage = async () => {
       const data = await response.json();
       messageContent.value = ""; // Clear the input field
       fetchMessages(); // Re-fetch the messages after sending a new one
+    } else if (response.status == 404) {
+      console.log("No messages yet.");
     } else {
       alert("Error sending message");
     }

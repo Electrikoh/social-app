@@ -1,16 +1,14 @@
 <template>
-  <nav class="fixed w-full top-0 left-0 bg-gradient-to-r from-blue-600 to-teal-500 border-b shadow-lg py-4 z-50">
+  <nav
+    class="fixed w-full top-0 left-0 bg-gradient-to-r from-blue-600 to-teal-500 border-b shadow-lg py-4 z-50"
+  >
     <div class="max-w-screen-xl mx-auto px-6 flex justify-between items-center">
       <div class="text-white font-bold flex center gap-2 text-2xl">
-        <img src="/icon.svg" width="35px" alt="">
+        <img src="/icon.svg" width="35px" alt="" />
         <span>ChatXE</span>
       </div>
       <div class="space-x-6 text-white flex items-center justify-center">
-        <RouterLink
-          to="/"
-          :class="getActiveClass('/')"
-          class="nav-link"
-        >
+        <RouterLink to="/" :class="getActiveClass('/')" class="nav-link">
           Home
         </RouterLink>
         <RouterLink
@@ -21,23 +19,22 @@
           Login
         </RouterLink>
         <RouterLink
-          to="/chat"
+          to="/groups"
           :class="getActiveClass('/chat')"
           class="nav-link"
         >
-          Chat
+          Groups
         </RouterLink>
       </div>
 
       <div class="space-x-4 text-white flex items-center">
         <button class="transition-colors duration-300 ease-in-out">
-          <font-awesome-icon icon="globe"class="d" /> EN
+          <font-awesome-icon icon="globe" class="d" /> EN
         </button>
         <button class="transition-colors duration-300 ease-in-out">
           <font-awesome-icon class="d" :icon="['fab', 'twitter']" /> Twitter
         </button>
       </div>
-
     </div>
   </nav>
 </template>
@@ -53,17 +50,17 @@ const navigateToChat = () => {
 };
 
 const getActiveClass = (path: string) => {
-  return route.path === path ? 'active-link' : '';
+  return route.path === path ? "active-link" : "";
 };
 </script>
 
 <style scoped>
-.d{
-  color:#3b82f6;
+.d {
+  color: #3b82f6;
 }
 .nav-link {
   position: relative;
-  padding-bottom: 4px; 
+  padding-bottom: 4px;
 }
 
 .nav-link::after {
@@ -72,7 +69,7 @@ const getActiveClass = (path: string) => {
   bottom: 0;
   left: 0;
   width: 0;
-  height: 2px; 
+  height: 2px;
   background-color: #3b82f6;
   transition: width 0.3s ease;
 }

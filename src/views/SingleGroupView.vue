@@ -54,7 +54,7 @@
           class="p-2 bg-[#40444b] rounded-lg"
         >
           <a
-            :href="`${chatId}/channel/${channel._id}`"
+            :href="`${groupId}/${channel._id}`"
             class="text-[#5865f2] hover:underline"
           >
             {{ channel.channel_name }}
@@ -81,7 +81,7 @@ import { useRoute, useRouter } from "vue-router";
 const route = useRoute();
 const router = useRouter();
 
-const chatId = ref(route.params.chatId);
+const groupId = ref(route.params.groupId);
 const channel_name = ref("");
 const channel_type = ref("text");
 const channels = ref<any[]>([]);
@@ -91,7 +91,7 @@ const fetchChannels = async () => {
 
   try {
     const response = await fetch(
-      `http://localhost:3000/api/chat/${chatId.value}/channel`,
+      `http://localhost:3000/api/groups/${groupId.value}`,
       {
         method: "GET",
         headers: {
@@ -119,7 +119,7 @@ const createChannel = async () => {
 
   try {
     const response = await fetch(
-      `http://localhost:3000/api/chat/${chatId.value}/channel`,
+      `http://localhost:3000/api/groups/${groupId.value}`,
       {
         method: "POST",
         headers: {
@@ -151,9 +151,8 @@ const inviteeUsername = ref("");
 const inviteUser = async () => {
   const token = localStorage.getItem("token");
   try {
-    console.log(`aaaaa ${inviteeUsername.value}`);
     const response = await fetch(
-      `http://localhost:3000/api/chat/${chatId.value}/invite`,
+      `http://localhost:3000/api/groups/${groupId.value}/invite`,
       {
         method: "POST",
         headers: {

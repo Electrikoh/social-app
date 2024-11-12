@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import LoginView from "@/views/LoginView.vue";
-import ChatView from "@/views/ChatView.vue";
 import RegisterView from "@/views/RegisterView.vue";
-import SingleChatView from "@/views/SingleChatView.vue";
 import ChannelView from "@/views/ChannelView.vue";
+import GroupsView from "@/views/GroupsView.vue";
+import SingleGroupView from "@/views/SingleGroupView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,9 +20,9 @@ const router = createRouter({
       component: LoginView,
     },
     {
-      path: "/chat",
-      name: "chat",
-      component: ChatView,
+      path: "/groups",
+      name: "groups",
+      component: GroupsView,
     },
     {
       path: "/register",
@@ -30,12 +30,12 @@ const router = createRouter({
       component: RegisterView,
     },
     {
-      path: "/chat/:chatId",
-      name: "chat-id",
-      component: SingleChatView,
+      path: "/groups/:groupId",
+      name: "group-id",
+      component: SingleGroupView,
     },
     {
-      path: "/chat/:chatId/channel/:channelId",
+      path: "/groups/:groupId/:channelId",
       name: "channel-id",
       component: ChannelView,
     },
