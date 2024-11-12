@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useRoute } from "vue-router";
 
 const route = useRoute();
@@ -56,6 +56,7 @@ const chatId = ref(route.params.chatId);
 const channelId = ref(route.params.channelId);
 const messageContent = ref("");
 const messages = ref<any[]>([]);
+let ws: WebSocket;
 
 const fetchMessages = async () => {
   const token = localStorage.getItem("token");
@@ -116,5 +117,18 @@ const sendMessage = async () => {
 // Fetch messages when the component is mounted
 onMounted(() => {
   fetchMessages();
+
+  ws = new WebSocket(`ws://localhost:3002`);
+  ws.onopen = () => console.log("WebSocket connection established");
+  ws.onmessage = (event) => {
+    const messageData = JSON.parse(event.data);
+    messages.value.push(messageData.message);
+  };
+  ws.onerror = (error) => console.error("WebSocket error:", error);
+  ws.onclose = () => console.log("WebSocket connection closed");
+});
+
+onBeforeUnmount(() => {
+  if (ws) ws.close();
 });
 </script>

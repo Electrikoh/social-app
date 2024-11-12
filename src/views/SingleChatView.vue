@@ -63,8 +63,14 @@
       </ul>
     </div>
     <div v-else>
-      <p class="text-gray-400">No channels found.</p>
+      <p class="text-gray-400">No channels yet. Create one!</p>
     </div>
+  </div>
+
+  <div>
+    <h2>Invite Users</h2>
+    <input v-model="inviteeUsername" placeholder="Enter username to invite" />
+    <button @click="inviteUser">Invite</button>
   </div>
 </template>
 
@@ -97,6 +103,8 @@ const fetchChannels = async () => {
     if (response.ok) {
       const data = await response.json();
       channels.value = data.channels;
+    } else if (response.status == 404) {
+      console.log("No channels yet.");
     } else {
       alert("Error fetching channels");
     }
@@ -135,6 +143,35 @@ const createChannel = async () => {
   } catch (error) {
     console.error(error);
     alert("An error occurred while creating the channel");
+  }
+};
+
+const inviteeUsername = ref("");
+
+const inviteUser = async () => {
+  const token = localStorage.getItem("token");
+  try {
+    console.log(`aaaaa ${inviteeUsername.value}`);
+    const response = await fetch(
+      `http://localhost:3000/api/chat/${chatId.value}/invite`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ invitee: inviteeUsername.value }),
+      }
+    );
+
+    if (response.ok) {
+      alert("User invited successfully");
+    } else {
+      alert("Error inviting user");
+    }
+  } catch (error) {
+    console.error(error);
+    alert("An error occurred while inviting the user");
   }
 };
 
