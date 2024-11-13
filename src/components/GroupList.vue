@@ -1,33 +1,34 @@
 <template>
-  <div class="min-h-screen bg-[#36393f] text-gray-200 p-6">
-    <div class="flex justify-between items-center mb-4">
-      <h1 class="text-2xl font-bold">Your Groups</h1>
-      <button
-        @click="createGroup"
-        class="bg-[#5865f2] text-white px-4 py-2 rounded-md hover:bg-[#4752c4] transition duration-200"
-      >
-        Create New Group
-      </button>
-    </div>
-    <div class="space-y-4">
-      <div
+  <div class="p-4 space-y-2 bg-gray-800">
+    <h2 class="text-lg font-semibold text-gray-300">Groups</h2>
+    <ul class="space-y-1">
+      <li
         v-for="group in groups"
         :key="group._id"
-        @click="goToGroup(group._id)"
-        class="bg-[#40444b] p-4 rounded-md shadow-md hover:cursor-pointer hover:bg-[#4e525a] transition duration-200"
+        class="hover:bg-gray-700 rounded-md p-2"
       >
-        <h2 class="font-semibold text-lg">{{ group.group_name }}</h2>
-      </div>
-    </div>
+        <RouterLink
+          :to="{ name: 'Group', params: { groupId: group._id } }"
+          class="text-gray-400 hover:text-white"
+        >
+          {{ group.group_name }}
+        </RouterLink>
+      </li>
+    </ul>
+    <button
+      @click="createGroup"
+      class="bg-[#5865f2] text-white px-4 py-2 rounded-md hover:bg-[#4752c4] transition duration-200"
+    >
+      Create New Group
+    </button>
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
+import { RouterLink } from "vue-router";
 import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
 
 const groups = ref([]);
-const router = useRouter();
 
 const getGroups = async () => {
   const token = localStorage.getItem("token");
@@ -43,16 +44,12 @@ const getGroups = async () => {
   }
 };
 
-const goToGroup = (groupId: string) => {
-  router.push(`/groups/${groupId}`);
-};
-
 const createGroup = async () => {
   const token = localStorage.getItem("token");
   const groupName = prompt("Enter the name of your new group:");
 
   if (groupName) {
-    const response = await fetch("http://localhost:3000/api/groups", {
+    const response = await fetch("http://localhost:3000/api/groups/new", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -63,7 +60,7 @@ const createGroup = async () => {
 
     if (response.ok) {
       alert("Group created successfully!");
-      getGroups();
+      getGroups(); // Refresh group list
     } else {
       alert("Error creating group");
     }
