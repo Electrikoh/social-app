@@ -8,6 +8,7 @@
     <!-- Messages area -->
     <div class="flex-1 p-4 overflow-y-auto space-y-4">
       <ul>
+        <h1 v-if="!messages[0]">No messages. Be the first one!</h1>
         <li
           v-for="message in messages"
           :key="message._id"
@@ -35,7 +36,6 @@
             >
           </div>
         </li>
-        ~
       </ul>
     </div>
 
@@ -53,18 +53,21 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
-import { useRoute } from "vue-router";
+import { ref, onMounted, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
+const router = useRouter();
 
 const groupId = ref(route.params.groupId);
-const channelId = ref(route.params.channelId);
+const channelId = ref(route.params.channelId || null); // Default to null if no channelId is provided
 const messageContent = ref("");
 const messages = ref([]);
+const channels = ref([]);
 
 const fetchMessages = async () => {
   const token = localStorage.getItem("token");
+  if (!channelId.value) return;
 
   try {
     const response = await fetch(
@@ -80,6 +83,9 @@ const fetchMessages = async () => {
     if (response.ok) {
       const data = await response.json();
       messages.value = data.messages;
+    } else if (response.status == 404) {
+      messages.value = [];
+      console.log("No messages yet.");
     } else {
       alert("Error fetching messages");
     }
@@ -113,6 +119,8 @@ const sendMessage = async () => {
       fetchMessages(); // Re-fetch the messages after sending a new one
     } else if (response.status == 404) {
       console.log("No messages yet.");
+    } else if (response.status == 500 && !channelId.value) {
+      console.log("Waiting");
     } else {
       alert("Error sending message");
     }
@@ -122,7 +130,44 @@ const sendMessage = async () => {
   }
 };
 
+// Fetch channels when the group changes
+const fetchChannels = async () => {
+  const token = localStorage.getItem("token");
+  try {
+    const response = await fetch(
+      `http://localhost:3000/api/groups/${groupId.value}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      channels.value = data.channels;
+      if (!channelId.value && channels.value.length > 0) {
+        channelId.value = channels.value[0]._id; // Set default channel if none is selected
+        router.replace(`/groups/${groupId.value}/${channelId.value}`); // Redirect to default channel
+      }
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+watch(
+  () => [route.params.groupId, route.params.channelId],
+  () => {
+    groupId.value = route.params.groupId;
+    channelId.value = route.params.channelId || null;
+    fetchChannels();
+    fetchMessages();
+  }
+);
+
 onMounted(() => {
-  fetchMessages();
+  fetchChannels();
 });
 </script>

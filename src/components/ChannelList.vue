@@ -90,17 +90,16 @@
 <script setup>
 import { onMounted, ref, watch } from "vue";
 import { RouterLink, useRoute } from "vue-router";
-const route = useRoute();
 
+const route = useRoute();
 const groupId = ref(route.params.groupId);
 const channels = ref([]);
+const isModalOpen = ref(false);
 const channel_name = ref("");
 const channel_type = ref("text");
-const isModalOpen = ref(false);
 
-const getChannels = async () => {
+const fetchChannels = async () => {
   const token = localStorage.getItem("token");
-
   try {
     const response = await fetch(
       `http://localhost:3000/api/groups/${groupId.value}`,
@@ -115,56 +114,55 @@ const getChannels = async () => {
     if (response.ok) {
       const data = await response.json();
       channels.value = data.channels;
-    } else if (response.status == 404) {
-      console.log("No channels yet.");
-    } else {
-      alert("Error fetching channels");
     }
   } catch (error) {
     console.error(error);
-    alert("An error occurred while fetching channels");
   }
 };
 
-watch(
-  () => route.params.groupId,
-  (newGroupId) => {
-    groupId.value = newGroupId;
-    getChannels();
-  }
-);
-
 const createChannel = async () => {
   const token = localStorage.getItem("token");
-  isModalOpen.value = !isModalOpen;
+
+  if (!channel_name.value.trim()) return;
+
+  const newChannel = {
+    channel_name: channel_name.value,
+    channel_type: channel_type.value,
+  };
 
   try {
     const response = await fetch(
-      `http://localhost:3000/api/groups/${groupId.value}/new`,
+      `http://localhost:3000/api/groups/${groupId.value}/channels`,
       {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          channel_name: channel_name.value,
-          channel_type: channel_type.value,
-        }),
+        body: JSON.stringify(newChannel),
       }
     );
 
     if (response.ok) {
-      const data = await response.json();
-      getChannels();
-    } else {
-      alert("Error creating channel");
+      fetchChannels();
+      channel_name.value = "";
+      channel_type.value = "text";
+      isModalOpen.value = false;
     }
   } catch (error) {
     console.error(error);
-    alert(`An error occurred while creating the channel : \n${error}`);
   }
 };
 
-onMounted(getChannels);
+watch(
+  () => route.params.groupId,
+  () => {
+    groupId.value = route.params.groupId;
+    fetchChannels();
+  }
+);
+
+onMounted(() => {
+  fetchChannels();
+});
 </script>
