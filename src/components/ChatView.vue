@@ -1,14 +1,14 @@
 <template>
   <div class="flex flex-col h-full bg-[#36393f] text-white">
-    <!-- Channel header -->
     <div class="p-4 bg-[#2f3136] border-b border-[#202225]">
-      <h2 class="text-xl font-semibold">Channel {{ channelId }}</h2>
+      <h2 class="text-xl font-semibold">
+        {{ currentChannelName || "Channel" }}
+      </h2>
     </div>
 
-    <!-- Messages area -->
     <div class="flex-1 p-4 overflow-y-auto space-y-4">
       <ul>
-        <h1 v-if="!messages[0]">No messages. Be the first one!</h1>
+        <h1 v-if="!messages.length">No messages. Be the first one!</h1>
         <li
           v-for="message in messages"
           :key="message._id"
@@ -39,7 +39,6 @@
       </ul>
     </div>
 
-    <!-- Message input area -->
     <div class="p-4 bg-[#2f3136] border-t border-[#202225]">
       <textarea
         v-model="messageContent"
@@ -53,17 +52,24 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, watch, onMounted, onBeforeUnmount, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useWebSocket } from "../utils/useWebSocket";
+
+const { connect, disconnect, sendMsg, messages } = useWebSocket();
 
 const route = useRoute();
 const router = useRouter();
 
 const groupId = ref(route.params.groupId);
-const channelId = ref(route.params.channelId || null); // Default to null if no channelId is provided
+const channelId = ref(route.params.channelId || null);
 const messageContent = ref("");
-const messages = ref([]);
 const channels = ref([]);
+
+const currentChannelName = computed(() => {
+  const channel = channels.value.find((ch) => ch._id === channelId.value);
+  return channel ? channel.name : null;
+});
 
 const fetchMessages = async () => {
   const token = localStorage.getItem("token");
@@ -82,6 +88,7 @@ const fetchMessages = async () => {
 
     if (response.ok) {
       const data = await response.json();
+
       messages.value = data.messages;
     } else if (response.status == 404) {
       messages.value = [];
@@ -98,7 +105,7 @@ const fetchMessages = async () => {
 const sendMessage = async () => {
   const token = localStorage.getItem("token");
 
-  if (!messageContent.value.trim()) return; // Prevent sending empty messages
+  if (!messageContent.value.trim()) return;
 
   try {
     const response = await fetch(
@@ -113,14 +120,11 @@ const sendMessage = async () => {
       }
     );
 
+    sendMsg({ content: messageContent.value });
+
     if (response.ok) {
-      const data = await response.json();
-      messageContent.value = ""; // Clear the input field
-      fetchMessages(); // Re-fetch the messages after sending a new one
-    } else if (response.status == 404) {
-      console.log("No messages yet.");
-    } else if (response.status == 500 && !channelId.value) {
-      console.log("Waiting");
+      messageContent.value = "";
+      fetchMessages();
     } else {
       alert("Error sending message");
     }
@@ -130,7 +134,6 @@ const sendMessage = async () => {
   }
 };
 
-// Fetch channels when the group changes
 const fetchChannels = async () => {
   const token = localStorage.getItem("token");
   try {
@@ -148,8 +151,8 @@ const fetchChannels = async () => {
       const data = await response.json();
       channels.value = data.channels;
       if (!channelId.value && channels.value.length > 0) {
-        channelId.value = channels.value[0]._id; // Set default channel if none is selected
-        router.replace(`/groups/${groupId.value}/${channelId.value}`); // Redirect to default channel
+        channelId.value = channels.value[0]._id;
+        router.replace(`/groups/${groupId.value}/${channelId.value}`);
       }
     }
   } catch (error) {
@@ -169,5 +172,10 @@ watch(
 
 onMounted(() => {
   fetchChannels();
+  connect();
+});
+
+onBeforeUnmount(() => {
+  disconnect();
 });
 </script>

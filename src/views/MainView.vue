@@ -4,6 +4,7 @@
     <div class="flex flex-col w-64 bg-gray-800 border-r border-gray-700">
       <GroupList />
       <ChannelList />
+      <Settings />
     </div>
     <div class="flex-1">
       <RouterView />
@@ -11,15 +12,9 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import GroupList from "../components/GroupList.vue";
 import ChannelList from "../components/ChannelList.vue";
+import Settings from "../components/Settings.vue";
 import { RouterView } from "vue-router";
-
-export default {
-  components: {
-    GroupList,
-    ChannelList,
-  },
-};
 </script>

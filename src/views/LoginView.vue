@@ -61,7 +61,7 @@ const login = async () => {
       } else {
         sessionStorage.setItem("token", data.token); // Temporary storage
       }
-      router.push("/chat"); // Redirect to the chat page
+      router.push("/groups/1"); // Redirect to the chat page
     } else {
       errorMessage.value = data.error;
     }
